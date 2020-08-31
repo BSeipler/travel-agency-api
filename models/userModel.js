@@ -9,7 +9,9 @@ const userSchema = mongoose.Schema({
   firstName: reqString,
   lastName: reqString,
   email: reqString,
-  password: reqString
+  password: reqString,
+  trips: [String],
+  admin: Boolean
 })
 
 module.exports = mongoose.model('User', userSchema)
