@@ -34,20 +34,42 @@ exports.createUser = async (req, res) => {
     } else {
       // encrypt the password
       const hash = await bcrypt.hash(password, 10)
+      // initialized empty variable
+      let userInfo
+      let adminToken = false
       // create new user object with the encrypted password
-      const userInfo = {
-        firstName,
-        lastName,
-        email,
-        password: hash
+      // if there is an admin property in the request, use the admin info, else use the normal user info
+      if (req.body.admin) {
+        userInfo = {
+          firstName,
+          lastName,
+          email,
+          password: hash,
+          admin: true
+        }
+        adminToken = true
+      } else {
+        userInfo = {
+          firstName,
+          lastName,
+          email,
+          password: hash
+        }
       }
+
       // add user to the database
       const newUser = await User.create(userInfo)
       // find the new user in the db
       const user = await User.find({ email })
       const userId = user[0]._id
       // create the token
-      const token = await createToken(userId)
+      let token
+      if (adminToken) {
+        token = await createToken(userId, req.body.admin)
+      } else {
+        token = await createToken(userId)
+      }
+
       res.json({
         newUser,
         token
@@ -64,9 +86,9 @@ exports.createUser = async (req, res) => {
 
 exports.updateUser = async (req, res) => {
   try {
-    const userId = await verifyToken(req.headers.authorization)
+    const user = await verifyToken(req.headers.authorization)
     // update the user based on the ID in the token
-    await User.updateOne({ _id: userId }, req.body)
+    await User.updateOne({ _id: user.id }, req.body)
     res.json({
       message: 'User has been updated'
     })
@@ -81,9 +103,9 @@ exports.updateUser = async (req, res) => {
 
 exports.deleteUser = async (req, res) => {
   try {
-    const userId = await verifyToken(req.headers.authorization)
+    const user = await verifyToken(req.headers.authorization)
     // delete the user based on the ID in the token
-    await User.deleteOne({ _id: userId })
+    await User.deleteOne({ _id: user.id })
     res.json({
       message: 'User has been deleted'
     })
@@ -118,7 +140,12 @@ exports.userLogin = async (req, res) => {
           error: 'Credentials do not match'
         })
       } else {
-        const token = await createToken(userId)
+        let token
+        if (user[0].admin) {
+          token = await createToken(userId, user[0].admin)
+        } else {
+          token = await createToken(userId, user[0].admin)
+        }
         res.json({
           message: 'User is now logged in',
           token

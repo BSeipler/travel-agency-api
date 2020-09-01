@@ -1,4 +1,7 @@
 const Trip = require('./../models/tripModel')
+const authController = require('./authController')
+
+const verifyToken = authController.verifyToken
 
 /*****************************************************************
  get all trips (READ)
@@ -21,10 +24,17 @@ exports.getTrips = async (req, res) => {
 
 exports.createTrip = async (req, res) => {
   try {
-    const newTrip = await Trip.create(req.body)
-    res.json({
-      newTrip
-    })
+    const adminInfo = await verifyToken(req.headers.authorization)
+    if (adminInfo.admin) {
+      const newTrip = await Trip.create(req.body)
+      res.json({
+        newTrip
+      })
+    } else {
+      res.json({
+        error: 'User does not have permission.'
+      })
+    }
   } catch (error) {
     console.log(error.message)
   }
@@ -36,26 +46,40 @@ exports.createTrip = async (req, res) => {
 
 exports.updateTrip = async (req, res) => {
   try {
-    const updatedTrip = await Trip.updateOne({ _id: req.params.id }, req.body)
-    res.json({
-      success: true,
-      updatedTrip
-    })
+    const adminInfo = await verifyToken(req.headers.authorization)
+    if (adminInfo.admin) {
+      const updatedTrip = await Trip.updateOne({ _id: req.params.id }, req.body)
+      res.json({
+        success: true,
+        updatedTrip
+      })
+    } else {
+      res.json({
+        error: 'User does not have permission'
+      })
+    }
   } catch (error) {
     console.log(error.message)
   }
 }
 
 /*****************************************************************
- delete trip (UPDATE)
+ delete trip (DELETE)
  ********************************************************************/
 
 exports.deleteTrip = async (req, res) => {
   try {
-    await Trip.deleteOne({ _id: req.params.id })
-    res.json({
-      success: true
-    })
+    const adminInfo = await verifyToken(req.headers.authorization)
+    if (adminInfo.admin) {
+      await Trip.deleteOne({ _id: req.params.id })
+      res.json({
+        success: true
+      })
+    } else {
+      res.json({
+        error: 'User does not have permission'
+      })
+    }
   } catch (error) {
     console.log(error.message)
   }

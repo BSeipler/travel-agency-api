@@ -6,17 +6,25 @@ exports.verifyToken = async headers => {
     const token = headers.split(' ')[1]
     // verified the token and decoded it
     const decoded = await jwt.verify(token, process.env.JWT_SECRET)
-    return decoded.userId
+    return decoded
   } catch (error) {
     console.log(error.message)
   }
 }
 
-exports.createToken = async id => {
+exports.createToken = async (id, admin) => {
   try {
     // create the payload for the token
-    const payload = {
-      id
+    let payload
+    if (admin) {
+      payload = {
+        id,
+        admin
+      }
+    } else {
+      payload = {
+        id
+      }
     }
     // create the token
     const token = await jwt.sign(payload, process.env.JWT_SECRET)
