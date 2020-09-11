@@ -1,6 +1,7 @@
 const User = require('./../models/userModel')
 const bcrypt = require('bcrypt')
 const authController = require('./authController')
+const { decode } = require('jsonwebtoken')
 const { verifyToken, createToken } = authController
 
 /*****************************************************************
@@ -10,6 +11,7 @@ exports.getUsers = async (req, res) => {
   try {
     const users = await User.find()
     res.json({
+      success: true,
       users
     })
   } catch (error) {
@@ -69,8 +71,8 @@ exports.createUser = async (req, res) => {
       } else {
         token = await createToken(userId)
       }
-
       res.json({
+        success: true,
         newUser,
         token
       })
@@ -90,6 +92,7 @@ exports.updateUser = async (req, res) => {
     // update the user based on the ID in the token
     await User.updateOne({ _id: user.id }, req.body)
     res.json({
+      success: true,
       message: 'User has been updated'
     })
   } catch (error) {
@@ -107,6 +110,7 @@ exports.deleteUser = async (req, res) => {
     // delete the user based on the ID in the token
     await User.deleteOne({ _id: user.id })
     res.json({
+      success: true,
       message: 'User has been deleted'
     })
   } catch (error) {
@@ -147,6 +151,7 @@ exports.userLogin = async (req, res) => {
           token = await createToken(userId, user[0].admin)
         }
         res.json({
+          success: true,
           message: 'User is now logged in',
           token
         })
@@ -163,8 +168,9 @@ exports.userLogin = async (req, res) => {
 
 exports.getUser = async (req, res) => {
   try {
-    const user = await User.find({ _id: req.params.id })
+    const user = await User.find({ _id: req.user.id })
     res.json({
+      success: true,
       user
     })
   } catch (error) {

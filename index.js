@@ -10,22 +10,24 @@ const helmet = require('helmet')
 const morgan = require('morgan')
 const fs = require('fs')
 const path = require('path')
+const cookieParser = require('cookie-parser')
 
 const app = express()
-
-
 
 // middleware
 app.use(cors())
 
 // create a write stream (in append mode)
-var accessLogStream = fs.createWriteStream(path.join(__dirname, 'access.log'), { flags: 'a' })
- 
+var accessLogStream = fs.createWriteStream(path.join(__dirname, 'access.log'), {
+  flags: 'a'
+})
+
 // setup the logger
 app.use(morgan('combined', { stream: accessLogStream }))
 
 app.use(helmet())
 app.use(express.json())
+app.use(cookieParser())
 app.use('/users', usersRoute)
 app.use('/trips', tripRoute)
 app.use('/bookings', bookingRoute)

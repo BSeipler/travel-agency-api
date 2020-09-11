@@ -12,7 +12,8 @@ const reqDate = {
 
 const tripSchema = mongoose.Schema({
   title: reqString,
-  description: reqString,
+  shortDescription: reqString,
+  longDescription: reqString,
   image: reqString,
   cost: {
     type: Number,

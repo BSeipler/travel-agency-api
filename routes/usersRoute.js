@@ -1,6 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const userController = require('./../controllers/userController')
+const authenticateToken = require('../middlewares/authMiddleware')
 
 const {
   getUsers,
@@ -15,11 +16,13 @@ router
   .route('/')
   .get(getUsers)
   .post(createUser)
-  .put(updateUser)
-  .delete(deleteUser)
 
-router.get('/login', userLogin)
+router.put('/', authenticateToken, updateUser)
 
-router.route('/:id').get(getUser)
+router.delete('/', authenticateToken, deleteUser)
+
+router.post('/login', userLogin)
+
+router.get('/getUser', authenticateToken, getUser)
 
 module.exports = router
